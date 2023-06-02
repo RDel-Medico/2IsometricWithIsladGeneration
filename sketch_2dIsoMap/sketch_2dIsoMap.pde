@@ -16,9 +16,6 @@ PImage grass;
 //2d array for the tile
 Cube[][] c = new Cube[largeur][longueur];
 
-//2d array for the wave (contain offset of each tile)
-Tile[][] offset = new Tile[largeur][longueur];
-
 //Starting point in the perin noise function
 float decalageNoise = 0;
 
@@ -31,8 +28,6 @@ float[][] fullMap = new float[largeur][longueur];
 void setup() {
   size(500, 500);
 
-  frameRate(200);
-
   water = loadImage("water.png");
   water.resize(50, 50);
 
@@ -44,6 +39,8 @@ void setup() {
 
   m = new Map(23, 23);
 
+  frameRate(200);
+  
   generateTroncon();
 }
 
@@ -54,24 +51,15 @@ void draw() {
 
   for (int i = 0; i < largeur; i++) {
     for (int j = 0; j < longueur; j++) {
-      if (offset[i][j].water >= 1 ) { //If it's a water tile, we use the offset divided by how far it is from a land
-        c[i][j].offset = (offset[i][j].offset / offset[i][j].water);
-      } else { // If it's a land tile, no offset
-        c[i][j].offset = 0;
-      }
-
-      //Display the tile
       c[i][j].display();
     }
   }
-
-  //Make the movement of the wave by moving them to the right
+  
   for (int i = 0; i < largeur; i++) {
-    offset[i] = cicle(offset[i], i);
+    c[i] = cicle(c[i], i);
   }
   decalageNoise+=inc;
 
-  //Print framerate for stressTest
   textSize(56);
   fill(0);
   text(frameRate, 50, 50);
@@ -79,23 +67,21 @@ void draw() {
 
 
 void keyPressed () {
-  //Regenerate a new random starting point for perin noise function
   decalageNoise = random(100000);
 
   generateTroncon();
 }
 
-
 void generateTroncon() {
-  //Generate a new island
-  m.newMap();
-
   //Fill the map with water tile
   for (int i = 0; i < 48; i++) {
     for (int j = 0; j < 32; j++) {
       fullMap[i][j] = 0;
     }
   }
+
+  //Generation of an island
+  m.newMap();
 
   //Insertion of the island in the ocean
   fullMap = insertInBiggerTab(fullMap, m.map, (int)random(0, 25), (int)random(0, 9), 23, 23);
@@ -128,13 +114,17 @@ void generateTroncon() {
     for (int j = 0; j < longueur; j++) {
       float value = noise(i*inc, j*inc);
       if (fullMap[i][j]*255 <= 20) {
-        offset[i][j] = new Tile((int)map(value, 0, 1, -range, range), 2); // Water far from the island = small divider of the range of the wave (2)
+        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].water = 2;
       } else if (fullMap[i][j]*255 <= 40) {
-        offset[i][j] = new Tile((int)map(value, 0, 1, -range, range), 4); // Water near an island = medium divider of the range of the wave (4)
+        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].water = 4;
       } else if (fullMap[i][j]*255 <= 60) {
-        offset[i][j] = new Tile((int)map(value, 0, 1, -range, range), 6); // Water close from the island = big divider of the range of the wave (6)
+        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].water = 6;
       } else {
-        offset[i][j] = new Tile((int)map(value, 0, 1, -range, range), 0); // Not a water tile, no range of movement for the tile
+        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].water = 0;
       }
     }
   }
@@ -153,8 +143,8 @@ float[][] insertInBiggerTab(float [][] biggerTab, float[][] tab, int x, int y, i
 }
 
 
-Tile[] cicle (Tile[] tab, int j) {
-  Tile[] temp = tab;
+Cube[] cicle (Cube[] tab, int j) {
+  Cube[] temp = tab;
   for (int i = 1; i < tab.length; i++) {
     temp[i-1].offset = tab[i].offset;
   }

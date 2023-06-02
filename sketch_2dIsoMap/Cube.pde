@@ -1,11 +1,10 @@
-
-
-
 class Cube {
   float x;
   float y;
   
   PImage img;
+  
+  int water;
   
   float largeur;
   float longueur;
@@ -20,6 +19,8 @@ class Cube {
      this.largeur = img.width;
      this.longueur = img.height;
      
+     this.water = 1;
+     
      this.offset = 0;
   }
   
@@ -27,7 +28,12 @@ class Cube {
   
   
   void display () {
-     image(img, x, y + offset);
+    if (water == 0) {
+      image(img, x, y);
+    } else {
+      image(img, x, y + offset / water);
+    }
+     
   }
   
   void transpo() {
