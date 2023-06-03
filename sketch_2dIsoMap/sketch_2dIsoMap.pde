@@ -2,6 +2,8 @@
 int largeur = 48;
 int longueur = 32;
 
+mape ma;
+
 PImage player;
 
 PImage boatSprite;
@@ -31,7 +33,7 @@ float decalageNoise = 0;
 Map m;
 
 //key pressed
-boolean[] keypressed = new boolean[5]; // [0]Z [1]Q [2]S [3]D [4]others
+boolean[] keypressed = new boolean[6]; // [0]Z [1]Q [2]S [3]D [4]M [5]others
 
 //The map of the entire section (island + ocean)
 float[][] fullMap = new float[largeur][longueur];
@@ -61,6 +63,8 @@ void setup() {
   frameRate(30);
 
   generateTroncon();
+  
+  ma = new mape(fullMap);
 }
 
 
@@ -92,8 +96,6 @@ void draw() {
   int playerXTile = ceil(getNoIsoX(-playerX, -playerY + height / 2));
   int playerYTile = ceil(getNoIsoY(-playerX, -playerY + height / 2));
   
-  manageKey();
-  
   if (c[playerXTile][playerYTile].water > 0) {
     player = boatSprite;
     imageMode(CENTER);
@@ -103,6 +105,8 @@ void draw() {
     imageMode(CENTER);
     image(player, width/2, height/2);
   }
+  
+  manageKey();
 }
 
 float getNoIsoX(int xPos, int yPos) {
@@ -145,7 +149,7 @@ void keyReleased () {
     keypressed[3] = false;
     break;
   default:
-    keypressed[4] = false;
+    keypressed[5] = false;
     break;
   }
 }
@@ -165,8 +169,11 @@ void keyPressed () {
   case 'd':
     keypressed[3] = true;
     break;
+  case 'm':
+    keypressed[4] = !keypressed[4];
+    break;
   default:
-    keypressed[4] = true;
+    keypressed[5] = true;
     break;
   }
 }
@@ -207,10 +214,15 @@ void manageKey () {
     }
     playerX-=10;
   }
-
+  
   if (keypressed[4]) {
+    ma.display();
+  }
+
+  if (keypressed[5]) {
     decalageNoise = random(100000);
     generateTroncon();
+    ma = new mape(fullMap);
   }
 }
 
