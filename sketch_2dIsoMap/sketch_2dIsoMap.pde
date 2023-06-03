@@ -2,6 +2,14 @@
 int largeur = 48;
 int longueur = 32;
 
+PImage player;
+
+PImage boatSprite;
+PImage playerSprite;
+
+int playerX = 0;
+int playerY = 0;
+
 //Range of the wave
 int range = 80;
 
@@ -22,11 +30,22 @@ float decalageNoise = 0;
 //The map of the island
 Map m;
 
+//key pressed
+boolean[] keypressed = new boolean[5]; // [0]Z [1]Q [2]S [3]D [4]others
+
 //The map of the entire section (island + ocean)
 float[][] fullMap = new float[largeur][longueur];
 
 void setup() {
   size(500, 500);
+
+  player = loadImage("boat.png");
+  player.resize(100, 100);
+  
+  boatSprite = player;
+  
+  playerSprite = loadImage("player.png");
+  playerSprite.resize(100,100);
 
   water = loadImage("water.png");
   water.resize(50, 50);
@@ -39,8 +58,8 @@ void setup() {
 
   m = new Map(23, 23);
 
-  frameRate(200);
-  
+  frameRate(30);
+
   generateTroncon();
 }
 
@@ -54,7 +73,7 @@ void draw() {
       c[i][j].display();
     }
   }
-  
+
   for (int i = 0; i < largeur; i++) {
     c[i] = cicle(c[i], i);
   }
@@ -63,13 +82,136 @@ void draw() {
   textSize(56);
   fill(0);
   text(frameRate, 50, 50);
+  
+  //get mouseX Tile : ceil(getNoIsoX(mouseX - width / 2 - playerX, mouseY - playerY))
+  //get mouseY Tile : ceil(getNoIsoY(mouseX - width / 2 - playerX, mouseY - playerY))
+  
+  //get playerX Tile : ceil(getNoIsoX(-playerX, -playerY + height / 2))
+  //get playerY Tile : ceil(getNoIsoY(-playerX, -playerY + height / 2))
+  
+  int playerXTile = ceil(getNoIsoX(-playerX, -playerY + height / 2));
+  int playerYTile = ceil(getNoIsoY(-playerX, -playerY + height / 2));
+  
+  manageKey();
+  
+  if (c[playerXTile][playerYTile].water > 0) {
+    player = boatSprite;
+    imageMode(CENTER);
+    image(player, width/2, height/2 + c[playerXTile][playerYTile].offsetWave / c[playerXTile][playerYTile].water);
+  } else {
+    player = playerSprite;
+    imageMode(CENTER);
+    image(player, width/2, height/2);
+  }
 }
 
+float getNoIsoX(int xPos, int yPos) {
+    int xNoIso = 0;
+    
+    float det = determinant();
+    
+    xNoIso = ceil(((xPos * (det * (sand.height / 4))) + (yPos * (det * (sand.width / 2)))));
+    
+    return xNoIso;
+  }
+  
+  float getNoIsoY(int xPos, int yPos) {
+    int yNoIso = 0;
+    
+    float det = determinant();
+    
+    yNoIso = ceil(((xPos * (det * ((-sand.height) / 4))) + (yPos * (det * (sand.width / 2)))));
+    
+    return yNoIso;
+  }
+  
+  float determinant () {
+    float bottom = ((sand.width * sand.height) / 4);
+    return (1 / bottom);
+  }
+
+void keyReleased () {
+  switch(key) {
+  case 'z':
+    keypressed[0] = false;
+    break;
+  case 's':
+    keypressed[1] = false;
+    break;
+  case 'q':
+    keypressed[2] = false;
+    break;
+  case 'd':
+    keypressed[3] = false;
+    break;
+  default:
+    keypressed[4] = false;
+    break;
+  }
+}
 
 void keyPressed () {
-  decalageNoise = random(100000);
 
-  generateTroncon();
+  switch(key) {
+  case 'z':
+    keypressed[0] = true;
+    break;
+  case 's':
+    keypressed[1] = true;
+    break;
+  case 'q':
+    keypressed[2] = true;
+    break;
+  case 'd':
+    keypressed[3] = true;
+    break;
+  default:
+    keypressed[4] = true;
+    break;
+  }
+}
+
+void manageKey () {
+  if (keypressed[0]) {
+    for (int i = 0; i < largeur; i++) {
+      for (int j = 0; j < longueur; j++) {
+        c[i][j].offsetY+=10; //Translation to create 2d isometric effect
+      }
+    }
+    playerY+=10;
+  }
+
+  if (keypressed[1]) {
+    for (int i = 0; i < largeur; i++) {
+      for (int j = 0; j < longueur; j++) {
+        c[i][j].offsetY-=10; //Translation to create 2d isometric effect
+      }
+    }
+    playerY-=10;
+  }
+
+  if (keypressed[2]) {
+    for (int i = 0; i < largeur; i++) {
+      for (int j = 0; j < longueur; j++) {
+        c[i][j].offsetX+=10; //Translation to create 2d isometric effect
+      }
+    }
+    playerX+=10;
+  }
+
+  if (keypressed[3]) {
+    for (int i = 0; i < largeur; i++) {
+      for (int j = 0; j < longueur; j++) {
+        c[i][j].offsetX-=10; //Translation to create 2d isometric effect
+      }
+    }
+    playerX-=10;
+  }
+
+  if (keypressed[4]) {
+    decalageNoise = random(100000);
+    generateTroncon();
+  }
 }
 
 void generateTroncon() {
@@ -90,11 +232,11 @@ void generateTroncon() {
   for (int i = 0; i < largeur; i++) {
     for (int j = 0; j < longueur; j++) {
       if (fullMap[i][j]*255 > 90) {
-        c[i][j] = new Cube (grass.width*i, grass.height*j, grass);
+        c[i][j] = new Cube (i, j, grass);
       } else if (fullMap[i][j]*255 > 60) {
-        c[i][j] = new Cube (sand.width*i, sand.height*j, sand);
+        c[i][j] = new Cube (i, j, sand);
       } else {
-        c[i][j] = new Cube (water.width*i, water.height*j, water);
+        c[i][j] = new Cube (i, j, water);
       }
     }
   }
@@ -104,8 +246,7 @@ void generateTroncon() {
       c[i][j].transpo(); //Translation to create 2d isometric effect
 
       //Translation to center the map after the application of 2d isometric matrix
-      c[i][j].x += 300;
-      c[i][j].y -= 100;
+      c[i][j].x += width / 2;
     }
   }
 
@@ -113,17 +254,18 @@ void generateTroncon() {
   for (int i = 0; i < largeur; i++) {
     for (int j = 0; j < longueur; j++) {
       float value = noise(i*inc, j*inc);
+      
       if (fullMap[i][j]*255 <= 20) {
-        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].offsetWave = (int)map(value, 0, 1, -range, range);
         c[i][j].water = 2;
       } else if (fullMap[i][j]*255 <= 40) {
-        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].offsetWave = (int)map(value, 0, 1, -range, range);
         c[i][j].water = 4;
       } else if (fullMap[i][j]*255 <= 60) {
-        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].offsetWave = (int)map(value, 0, 1, -range, range);
         c[i][j].water = 6;
       } else {
-        c[i][j].offset = (int)map(value, 0, 1, -range, range);
+        c[i][j].offsetWave = (int)map(value, 0, 1, -range, range);
         c[i][j].water = 0;
       }
     }
@@ -146,11 +288,11 @@ float[][] insertInBiggerTab(float [][] biggerTab, float[][] tab, int x, int y, i
 Cube[] cicle (Cube[] tab, int j) {
   Cube[] temp = tab;
   for (int i = 1; i < tab.length; i++) {
-    temp[i-1].offset = tab[i].offset;
+    temp[i-1].offsetWave = tab[i].offsetWave;
   }
 
   float value = noise(decalageNoise+j*inc, decalageNoise+((tab.length-1))*inc);
 
-  temp[tab.length-1].offset = (int)map(value, 0, 1, -range, range);
+  temp[tab.length-1].offsetWave = (int)map(value, 0, 1, -range, range);
   return temp;
 }
