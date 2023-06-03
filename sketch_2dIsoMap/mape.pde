@@ -13,7 +13,16 @@ class mape{
     noStroke();
     for (int j=0; j<m.h; j++){
       for (int i=0; i<m.w; i++){
-        fill(m.map[i][j], m.map[i][j], m.map[i][j], 200);
+        
+        if (fullMap[i][j]*255 > 90) {
+          fill(0, m.map[i][j]*255, 0, 100);
+        } else if (fullMap[i][j]*255 > 60) {
+          fill(m.map[i][j]*255, m.map[i][j]*255, 0, 100);
+        } else {
+          fill(0, 0, m.map[i][j]*255, 100);
+        }
+      
+        
         rect(i*10+(width - m.w*10) / 2 + 5, j*10+(height - m.h*10) / 2, 10, 10);
       }
     }
