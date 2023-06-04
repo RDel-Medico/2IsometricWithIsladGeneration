@@ -1,6 +1,6 @@
-class mape{
+class MiniMap{
   Map m;
-  mape(float[][] m){
+  MiniMap(float[][] m){
     this.m = new Map(48, 32);
     for (int i=0; i<this.m.w; i++){
       for (int j=0; j<this.m.h; j++){

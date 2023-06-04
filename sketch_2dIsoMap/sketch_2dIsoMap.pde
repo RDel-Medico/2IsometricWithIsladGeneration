@@ -2,7 +2,7 @@
 int largeur = 48;
 int longueur = 32;
 
-mape ma;
+MiniMap ma;
 
 PImage player;
 
@@ -64,7 +64,7 @@ void setup() {
 
   generateTroncon();
   
-  ma = new mape(fullMap);
+  ma = new MiniMap(fullMap);
 }
 
 
@@ -222,7 +222,7 @@ void manageKey () {
   if (keypressed[5]) {
     decalageNoise = random(100000);
     generateTroncon();
-    ma = new mape(fullMap);
+    ma = new MiniMap(fullMap);
   }
 }
 
