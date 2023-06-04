@@ -9,17 +9,22 @@ class Cube {
   
   int water;
   
+  int cellType;
+  
   float largeur;
   float longueur;
   
   int offsetWave;
   int offsetY;
   int offsetX;
+  int offsetHeight;
   
   
-  Cube(int x, int y, PImage img) {
+  Cube(int x, int y, PImage img, int type) {
      this.cellX = x;
      this.cellY = y;
+     
+     this.cellType = type;
      
      this.img = img;
      this.largeur = img.width;
@@ -39,7 +44,7 @@ class Cube {
   
   void display () {
     if (water == 0) {
-      image(img, x + offsetX, y + offsetY);
+      image(img, x + offsetX, y + offsetY + offsetHeight);
     } else {
       image(img, x + offsetX, y + offsetY + offsetWave / water);
     }

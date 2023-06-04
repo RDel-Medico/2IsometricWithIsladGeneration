@@ -96,6 +96,7 @@ void draw() {
   int playerXTile = ceil(getNoIsoX(-playerX, -playerY + height / 2));
   int playerYTile = ceil(getNoIsoY(-playerX, -playerY + height / 2));
   
+  println(c[playerXTile][playerYTile].offsetY);
   if (c[playerXTile][playerYTile].water > 0) {
     player = boatSprite;
     imageMode(CENTER);
@@ -103,7 +104,7 @@ void draw() {
   } else {
     player = playerSprite;
     imageMode(CENTER);
-    image(player, width/2, height/2);
+    image(player, width/2, height/2 + c[playerXTile][playerYTile].offsetHeight);
   }
   
   manageKey();
@@ -222,6 +223,8 @@ void manageKey () {
   if (keypressed[5]) {
     decalageNoise = random(100000);
     generateTroncon();
+    playerX = 0;
+    playerY = 0;
     ma = new MiniMap(fullMap);
   }
 }
@@ -244,11 +247,11 @@ void generateTroncon() {
   for (int i = 0; i < largeur; i++) {
     for (int j = 0; j < longueur; j++) {
       if (fullMap[i][j]*255 > 90) {
-        c[i][j] = new Cube (i, j, grass);
+        c[i][j] = new Cube (i, j, grass, 2);
       } else if (fullMap[i][j]*255 > 60) {
-        c[i][j] = new Cube (i, j, sand);
+        c[i][j] = new Cube (i, j, sand, 1);
       } else {
-        c[i][j] = new Cube (i, j, water);
+        c[i][j] = new Cube (i, j, water, 0);
       }
     }
   }
@@ -282,6 +285,21 @@ void generateTroncon() {
       }
     }
   }
+  
+  c = generateRelief(c);
+}
+
+Cube[][] generateRelief(Cube [][] c) {
+  for (int i = 0; i < largeur; i++) {
+    for (int j = 0; j < longueur; j++) {
+      if (c[i][j].cellType == 1) {
+        c[i][j].offsetHeight -= 10;
+      } else if (c[i][j].cellType == 2) {
+        c[i][j].offsetHeight -= map(fullMap[i][j]*255, 90, 255, 10, 150);
+      }
+    } 
+  }
+  return c;
 }
 
 float[][] insertInBiggerTab(float [][] biggerTab, float[][] tab, int x, int y, int largeur, int longueur) {
