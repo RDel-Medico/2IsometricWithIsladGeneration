@@ -1,4 +1,4 @@
-class MiniMap{
+  class MiniMap{
   Map m;
   MiniMap(float[][] m){
     this.m = new Map(48, 32);
@@ -28,3 +28,11 @@ class MiniMap{
     }
   }
 }
+
+
+//Escalade
+//Course à pied
+//Prendre le petit déjeuner
+//Prendre le repas de midi
+//Prendre le repas du soir
+//Développer
